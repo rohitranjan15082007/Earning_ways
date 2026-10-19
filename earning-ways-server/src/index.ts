@@ -87,9 +87,17 @@ app.get("/", (req, res) => {
 });
 
 // Payout QR images uploaded by members are stored on disk when Cloudinary is not
-// configured, and served read-only from here.
-const uploadsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../uploads');
-mkdirSync(path.join(uploadsDir, 'payout-qr'), { recursive: true });
+// configured, and served read-only from here. A serverless filesystem is
+// read-only except for /tmp, and /tmp does not survive a new instance, so on
+// Vercel this is best-effort only: configure Cloudinary for real uploads.
+const uploadsDir = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../uploads');
+try {
+  mkdirSync(path.join(uploadsDir, 'payout-qr'), { recursive: true });
+} catch (error) {
+  console.error('Uploads directory is not writable; local image storage is disabled:', error);
+}
 app.use('/uploads', express.static(uploadsDir, { fallthrough: false, index: false, dotfiles: 'deny' }));
 
 // Apply the access policy to every API route, including future domain endpoints.
@@ -118,7 +126,9 @@ app.use("/api/notifications", notificationRoutes);
 
 app.use(errorMiddleware);
 
-if (process.env.NODE_ENV !== "test") {
+// On Vercel the platform owns the HTTP listener and calls the exported app, so
+// `listen` only runs for a normal Node process (local dev, Docker, a VM).
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
   const port = Number(process.env.PORT ?? 4000);
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     throw new Error("PORT must be an integer between 1 and 65535");
@@ -127,3 +137,6 @@ if (process.env.NODE_ENV !== "test") {
     console.log(`Server is running on port ${port}`);
   });
 }
+
+// The serverless handler (and `vercel build`) needs the Express app exported.
+export default app;

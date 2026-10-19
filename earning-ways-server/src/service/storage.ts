@@ -13,7 +13,11 @@ import ENV from '../config/env.js';
  * (served read-only from /uploads — see src/index.ts).
  */
 
-const UPLOADS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../uploads');
+// Vercel's bundle is read-only; only /tmp is writable (and it is per-instance).
+// Cloudinary is the durable option there — this keeps uploads working in dev.
+const UPLOADS_ROOT = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../uploads');
 
 const EXTENSION_BY_MIME: Record<string, string> = {
   'image/png': 'png',
