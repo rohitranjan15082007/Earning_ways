@@ -1,0 +1,29 @@
+### Wallet API Tests
+@baseUrl = http://localhost:4000/api/wallet
+
+
+### 1. Create Wallet
+POST {{baseUrl}}/create
+Content-Type: application/json
+  
+{
+  "userId": "81acb703-4f9c-49b2-ad67-50505bbe7338",
+  "upiId": "member@bank",
+  "currency": "INR",
+  "balance": 1000.00
+}
+
+### 2. Get Wallet by User ID
+GET {{baseUrl}}/81acb703-4f9c-49b2-ad67-50505bbe7338
+
+### 3. Update Wallet
+PUT {{baseUrl}}/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+Content-Type: application/json
+
+{
+  "upiId": "other@bank",
+  "balance": 1500.00
+}
+
+### 4. Delete Wallet
+DELETE {{baseUrl}}/81acb703-4f9c-49b2-ad67-50505bbe7338

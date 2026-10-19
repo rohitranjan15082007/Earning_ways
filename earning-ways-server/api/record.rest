@@ -1,0 +1,39 @@
+### ROI Record API Tests
+@baseUrl = http://localhost:4000/api/record
+
+### 1. Create ROI Record
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "userId": "a0cdf2dc-1af2-436b-bd0f-c3461599b3f6",
+  "investmentId": "00000000-0000-0000-0000-000000000000",
+  "weekNumber": 1,
+  "roiAmount": 10.50,
+  "isReferralBonusApplied": false
+}
+
+### 2. Get All ROI Records
+GET {{baseUrl}}/all
+
+### 3. Get ROI Record by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update ROI Record
+PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "weekNumber": 2,
+  "roiAmount": 15.75,
+  "isReferralBonusApplied": true
+}
+
+### 5. Delete ROI Record
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get ROI Records by User ID
+GET {{baseUrl}}/user/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 7. Get ROI Records by Investment ID
+GET {{baseUrl}}/investment/00000000-0000-0000-0000-000000000000

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+public/index.js
+public/index.js.map
+public/index.d.ts
+public/index.d.ts.map
+# The API compiles into its own public/ folder; the frontends keep real assets
+# there, so only the server's compiled output is ignored.
+earning-ways-server/public/
+.test-build/
+generated/
+*.tsbuildinfo
+
+# Local / runtime secrets and data
+.env
+.env.local
+*.local
+uploads/
+
+# Tooling & audit artifacts
+ui-audit/
+tools/app-shots.mjs
+tools/desktop-audit.mjs
+tools/mobile-guard.mjs
+tools/mockup-audit.mjs
+*.log

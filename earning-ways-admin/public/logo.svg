@@ -1,0 +1,43 @@
+<svg viewBox="0 0 1500 350" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Shield with circuit pattern -->
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#66BB6A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A3D5C;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Shield background -->
+  <path d="M 80 50 L 160 30 L 220 80 L 220 180 Q 140 240 140 280 Q 140 240 60 180 L 60 80 Z" fill="url(#shieldGradient)" stroke="#0D1F2D" stroke-width="2"/>
+  
+  <!-- Circuit patterns on shield -->
+  <g stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.9">
+    <!-- Center circle -->
+    <circle cx="140" cy="120" r="30"/>
+    
+    <!-- Outer circles -->
+    <circle cx="140" cy="120" r="50"/>
+    <circle cx="140" cy="120" r="65"/>
+    
+    <!-- Connection lines -->
+    <line x1="140" y1="55" x2="140" y2="75"/>
+    <line x1="140" y1="165" x2="140" y2="185"/>
+    <line x1="75" y1="120" x2="95" y2="120"/>
+    <line x1="185" y1="120" x2="205" y2="120"/>
+    
+    <!-- Curved elements (waves) -->
+    <path d="M 95 70 Q 110 65 125 75" stroke="#FFFFFF" stroke-width="1.5"/>
+    <path d="M 110 95 Q 125 90 140 100" stroke="#FFFFFF" stroke-width="1.5"/>
+    <path d="M 125 110 Q 140 105 155 115" stroke="#FFFFFF" stroke-width="1.5"/>
+    <path d="M 155 95 Q 170 90 185 100" stroke="#FFFFFF" stroke-width="1.5"/>
+  </g>
+  
+  <!-- EXPOTRADEX Text -->
+  <text x="280" y="140" font-family="Arial, sans-serif" font-size="120" font-weight="bold" letter-spacing="8">
+    <tspan fill="#1A3D5C">EXP</tspan><tspan fill="#4A7C8C">O</tspan><tspan fill="#2D5F6F">T</tspan><tspan fill="#66BB6A">RA</tspan><tspan fill="#5BA860">D</tspan><tspan fill="#52B857">EX</tspan>
+  </text>
+  
+  <!-- Accent dots -->
+  <circle cx="420" cy="160" r="12" fill="#66BB6A"/>
+  <circle cx="1050" cy="160" r="12" fill="#66BB6A"/>
+</svg>

@@ -1,0 +1,54 @@
+### User API Tests
+@baseUrl = http://localhost:4000/api/user
+
+### 1. Create User
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "name": "Testa User",
+  "email": "test1@example.com",
+  "password": "password123",
+  "upiId": "testa@bank",
+  "referredByCode": "EXPO12345678"
+}
+
+### 1b. Create User without a referral (the code is optional)
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "name": "No Referral",
+  "email": "noreferral@example.com",
+  "password": "password123"
+}
+
+### 2. Login User
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 3. Get User by ID
+GET {{baseUrl}}/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 4. Update User
+PUT {{baseUrl}}/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+Content-Type: application/json
+
+{
+  "name": "Updated User",
+  "email": "updated@example.com"
+}
+
+### 5. Get User Referrals
+GET {{baseUrl}}/referrals/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 6. Get User Wallet
+GET {{baseUrl}}/wallet/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 7. Delete User
+DELETE {{baseUrl}}/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6

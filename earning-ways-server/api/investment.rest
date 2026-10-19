@@ -1,0 +1,35 @@
+### Investment API Tests
+@baseUrl = http://localhost:4000/api/investment
+
+### 1. Create Investment (admin-only: records an offline purchase in INR)
+### ROI, start and end dates always come from the plan, never from the client.
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "userId": "a0cdf2dc-1af2-436b-bd0f-c3461599b3f6",
+  "planId": "00000000-0000-0000-0000-000000000000",
+  "amountInvested": 1000.00,
+  "transactionId": "OFFLINE-REF-0001"
+}
+
+### 2. Get All Investments
+GET {{baseUrl}}/all
+
+### 3. Get Investment by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update Investment
+PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "amountInvested": 1500.00,
+  "roiPercentage": 0.12
+}
+
+### 5. Delete Investment
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get Investment Details
+GET {{baseUrl}}/details/00000000-0000-0000-0000-000000000000

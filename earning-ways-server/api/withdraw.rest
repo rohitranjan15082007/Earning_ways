@@ -1,0 +1,45 @@
+### Withdrawal API Tests
+@baseUrl = http://localhost:4000/api/withdraw
+
+### 0. Upload the payout QR image (multipart, field name: qrCodeImage)
+POST {{baseUrl}}/qr
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="qrCodeImage"; filename="payout-qr.png"
+Content-Type: image/png
+
+< ./payout-qr.png
+------boundary--
+
+### 1. Create Withdrawal (amount in INR, UPI id, optional QR url from step 0)
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "userId": "81acb703-4f9c-49b2-ad67-50505bbe7338",
+  "amount": 500.00,
+  "upiId": "member@bank",
+  "qrCodeUrl": "http://localhost:4000/uploads/payout-qr/00000000-0000-0000-0000-000000000000.png"
+}
+
+### 2. Get All Withdrawals
+GET {{baseUrl}}/all
+
+### 3. Get Withdrawal by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update Withdrawal
+PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "amount": 750.00,
+  "status": "APPROVED"
+}
+
+### 5. Delete Withdrawal
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get Withdrawals by User ID
+GET {{baseUrl}}/user/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6

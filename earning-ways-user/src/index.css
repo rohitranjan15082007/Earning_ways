@@ -1,0 +1,282 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   Design system — PP-B "Emerald Money"
+   All colors MUST be HSL.
+
+   Rules (browser-measured, WCAG AA):
+   - Green means money, nothing else. One gradient per screen, and gradients are
+     always hairlines — never under text (white on the bright end = 1.9:1 FAIL).
+   - --destructive = SOLID FILL (white text only). For TEXT on tinted pills and
+     surfaces use --text-danger/--text-warn/--text-ok — bright in dark, deep in light.
+   ============================================================================ */
+
+@layer base {
+  :root {
+    /* Light mode */
+    --background: 0 0% 100%;
+    --foreground: 215 52% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 52% 8%;
+
+    --popover: 210 29% 94%;
+    --popover-foreground: 215 52% 8%;
+
+    /* Layer 1 — surfaces (solid, not glass) */
+    --muted: 216 33% 97%;
+    --muted-foreground: 216 20% 40%;
+    --text-3: 216 17% 43%;
+
+    /* Layer 3 — meaning */
+    --primary: 162 94% 24%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 33% 97%;
+    --secondary-foreground: 215 52% 8%;
+    --accent: 216 33% 97%;
+    --accent-foreground: 215 52% 8%;
+
+    --destructive: 0 74% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 162 94% 24%;
+    --warning: 32 95% 34%;
+    --info: 193 82% 31%;
+
+    /* text tokens — text on tinted backgrounds and plain surfaces */
+    --text-ok: 162 94% 24%;
+    --text-warn: 23 83% 31%;
+    --text-info: 193 82% 31%;
+    --text-danger: 0 74% 42%;
+    --glass-muted: 214 32% 91%;
+
+    --border: 212 31% 89%;
+    --input: 212 31% 89%;
+    --ring: 162 94% 24%;
+
+    --radius: 0.75rem;
+
+    /* Gradients — hairlines and decoration only */
+    --gradient-primary: linear-gradient(135deg, #047857 0%, #34d399 100%);
+    --gradient-bright: linear-gradient(90deg, #34d399 0%, #22d3ee 100%);
+    --gradient-glow: radial-gradient(circle at center, hsl(162 94% 24% / 0.1) 0%, transparent 70%);
+
+    /* Glassmorphism — public/landing pages only (V3) */
+    --glass-bg: hsla(0, 0%, 100%, 0.72);
+    --glass-border: hsla(162, 94%, 24%, 0.2);
+
+    /* Elevation — 3 levels, no glow */
+    --shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.06);
+    --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.05), 0 8px 24px rgba(11, 18, 32, 0.06);
+    --shadow-glow: 0 0 20px hsla(162, 94%, 24%, 0.18);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 52% 8%;
+    --sidebar-primary: 162 94% 24%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 216 33% 97%;
+    --sidebar-accent-foreground: 215 52% 8%;
+    --sidebar-border: 212 31% 89%;
+    --sidebar-ring: 162 94% 24%;
+  }
+
+  .dark {
+    --background: 215 52% 8%;
+    --foreground: 215 42% 93%;
+
+    --card: 215 47% 10%;
+    --card-foreground: 215 42% 93%;
+
+    --popover: 216 36% 16%;
+    --popover-foreground: 215 42% 93%;
+
+    --muted: 217 39% 13%;
+    --muted-foreground: 215 20% 65%;
+    --text-3: 215 18% 61%;
+
+    --primary: 162 94% 24%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 39% 13%;
+    --secondary-foreground: 215 42% 93%;
+    --accent: 217 39% 13%;
+    --accent-foreground: 215 42% 93%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 160 84% 52%;
+    --warning: 38 92% 50%;
+    --info: 187 86% 53%;
+
+    --text-ok: 160 84% 52%;
+    --text-warn: 38 92% 50%;
+    --text-info: 187 86% 53%;
+    --text-danger: 0 91% 71%;
+    --glass-muted: 215 20% 65%;
+
+    --border: 217 32% 22%;
+    --input: 217 32% 22%;
+    --ring: 160 84% 52%;
+
+    --gradient-primary: linear-gradient(135deg, #047857 0%, #34d399 100%);
+    --gradient-bright: linear-gradient(90deg, #34d399 0%, #22d3ee 100%);
+    --gradient-glow: radial-gradient(circle at center, hsl(160 84% 52% / 0.12) 0%, transparent 70%);
+
+    --glass-bg: hsla(215, 47%, 10%, 0.72);
+    --glass-border: hsla(160, 84%, 52%, 0.2);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 8px 24px rgba(0, 0, 0, 0.32);
+    --shadow-glow: 0 0 30px hsla(160, 84%, 52%, 0.22);
+
+    --sidebar-background: 215 47% 10%;
+    --sidebar-foreground: 215 42% 93%;
+    --sidebar-primary: 162 94% 24%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 39% 13%;
+    --sidebar-accent-foreground: 215 42% 93%;
+    --sidebar-border: 217 32% 22%;
+    --sidebar-ring: 160 84% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Keyboard-only focus ring (design §4.9) */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+
+  /* Glassmorphism — landing/public pages only (V3) */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-card {
+    @apply glass rounded-xl;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Solid card (used throughout the app pages) */
+  .solid-card {
+    @apply rounded-xl border border-border bg-card;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* 4px brand hairline — a strip only, never over text */
+  .brand-hairline {
+    background-image: var(--gradient-bright);
+    background-repeat: no-repeat;
+    background-size: 100% 4px;
+  }
+
+  /* Decorative gradient text — landing headlines only, never on dark surfaces */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px hsla(160, 84%, 52%, 0.35);
+  }
+
+  /* Skeleton shimmer (stops under prefers-reduced-motion) */
+  .shimmer {
+    background-image: linear-gradient(90deg,
+        hsl(var(--muted)) 25%,
+        hsl(var(--border)) 37%,
+        hsl(var(--muted)) 63%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes glow-pulse {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px hsla(160, 84%, 52%, 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 40px hsla(160, 84%, 52%, 0.6);
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
+    .animate-float,
+    .animate-glow-pulse,
+    .animate-marquee,
+    .shimmer {
+      animation: none;
+    }
+  }
+}

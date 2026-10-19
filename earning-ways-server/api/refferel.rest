@@ -1,0 +1,38 @@
+### Referral API Tests
+@baseUrl = http://localhost:4000/api/refferel
+
+### 1. Create Referral
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "referrerId": "a0cdf2dc-1af2-436b-bd0f-c3461599b3f6",
+  "referredUserId": "00000000-0000-0000-0000-000000000000",
+  "level": 1,
+  "bonusPercentage": 0.05
+}
+
+### 2. Get All Referrals
+GET {{baseUrl}}/all
+
+### 3. Get Referral by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update Referral
+PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "level": 2,
+  "bonusPercentage": 0.08,
+  "status": "ACTIVE"
+}
+
+### 5. Delete Referral
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get Referrals by Referrer ID
+GET {{baseUrl}}/referrer/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 7. Get Referrals by Referred User ID
+GET {{baseUrl}}/referred/00000000-0000-0000-0000-000000000000

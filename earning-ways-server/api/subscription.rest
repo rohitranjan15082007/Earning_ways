@@ -1,0 +1,36 @@
+### Subscription Plan API Tests
+@baseUrl = http://localhost:4000/api/subscription
+
+### 1. Create Subscription Plan
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "name": "Basic Plan",
+  "minimumInvestment": 100.00,
+  "roiPerMonth": 10,
+  "durationInMonths": 6,
+  "description": "Basic investment plan"
+}
+
+### 2. Get All Subscription Plans
+GET {{baseUrl}}/all
+
+### 3. Get Subscription Plan by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update Subscription Plan
+PUT {{baseUrl}}/65907be0-ab12-4211-9069-1a5497fefd25
+Content-Type: application/json
+
+{
+  "name": "Premium Plan",
+  "minimumInvestment": 500.00,
+  "roiPerMonth": 0.02
+}
+
+### 5. Delete Subscription Plan
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get Subscription Plan Investments
+GET {{baseUrl}}/investments/00000000-0000-0000-0000-000000000000

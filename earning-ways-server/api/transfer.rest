@@ -1,0 +1,37 @@
+### Transfer API Tests
+@baseUrl = http://localhost:4000/api/transfer
+
+### 1. Create Transfer
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "senderId": "a0cdf2dc-1af2-436b-bd0f-c3461599b3f6",
+  "receiverId": "00000000-0000-0000-0000-000000000000",
+  "amount": 100.00,
+  "note": "Test transfer"
+}
+
+### 2. Get All Transfers
+GET {{baseUrl}}/all
+
+### 3. Get Transfer by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update Transfer
+PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "amount": 150.00,
+  "status": "SUCCESS"
+}
+
+### 5. Delete Transfer
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get Transfers by Sender ID
+GET {{baseUrl}}/sender/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 7. Get Transfers by Receiver ID
+GET {{baseUrl}}/receiver/00000000-0000-0000-0000-000000000000

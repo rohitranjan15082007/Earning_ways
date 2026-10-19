@@ -1,0 +1,39 @@
+### Transaction API Tests
+@baseUrl = http://localhost:4000/api/transaction
+
+### 1. Create Transaction
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "userId": "a0cdf2dc-1af2-436b-bd0f-c3461599b3f6",
+  "type": "DEPOSIT",
+  "amount": 100.50,
+  "currency": "INR",
+  "status": "PENDING",
+  "description": "Test deposit"
+}
+
+### 2. Get All Transactions
+GET {{baseUrl}}/all?page=&limit=&type=&status&date=
+
+### 3. Get Transaction by ID
+GET {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 4. Update Transaction
+PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "status": "SUCCESS",
+  "description": "Updated transaction"
+}
+
+### 5. Delete Transaction
+DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+
+### 6. Get Transactions by User ID
+GET {{baseUrl}}/user/a0cdf2dc-1af2-436b-bd0f-c3461599b3f6
+
+### 7. Get Transactions by Investment ID
+GET {{baseUrl}}/investment/00000000-0000-0000-0000-000000000000

@@ -1,0 +1,443 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * Earning Ways — every amount is INR (paise precise), and the only payment rail
+ * is Telegram Stars (XTR). There is no cryptocurrency anywhere in this schema.
+ */
+
+/**
+ * Enums
+ */
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  TRANSFER
+  INVESTMENT
+  REFERRAL_BONUS
+  ROI
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum InvestmentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum ReferralStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TransferStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+/**
+ * Models
+ */
+
+model User {
+  id             String   @id @default(uuid())
+  name           String?
+  email          String   @unique
+  passwordHash   String
+  upiId          String? // payout identity used for withdrawals
+  inrBalance     Decimal  @default("0.00") @db.Decimal(14, 2)
+  referralCode   String   @unique
+  referredById   String? // referral is optional at sign-up
+  referredBy     User?    @relation("UserReferredBy", fields: [referredById], references: [id], onDelete: Cascade)
+  referrals      User[]   @relation("UserReferredBy") // inverse relation (users this user referred via referredById)
+  totalReferrals Int      @default(0)
+  totalEarnings  Decimal  @default("0.00") @db.Decimal(14, 2)
+  tokenVersion   Int      @default(0) // bumped to invalidate issued tokens
+  currentLevel   Int      @default(0) // 0..5
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  wallet            Wallet?            @relation("UserToWallet")
+  investments       Investment[]
+  transactions      Transaction[]
+  payments          Payment[]
+  withdrawals       Withdrawal[]
+  transfersSent     Transfer[]         @relation("sentTransfers")
+  transfersRecv     Transfer[]         @relation("receivedTransfers")
+  referralsMade     Referral[]         @relation("Referrer") // referrals where this user is the referrer
+  referralsGot      Referral[]         @relation("Referred") // referrals where this user is the referredUser
+  roiRecords        ROIRecord[]
+  SupportTicket     SupportTicket[]
+  userNotifications UserNotification[]
+
+  @@unique([email, referralCode, referredById])
+  @@index([referredById])
+  @@index([email])
+  @@index([referralCode])
+}
+
+model Wallet {
+  userId    String   @id // use userId as primary to enforce 1:1
+  user      User     @relation("UserToWallet", fields: [userId], references: [id], onDelete: Cascade)
+  upiId     String? // member payout identity
+  qrCodeUrl String? // member payout QR image
+  currency  String   @default("INR")
+  balance   Decimal  @default("0.00") @db.Decimal(14, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubscriptionPlan {
+  id                String   @id @default(uuid())
+  name              String
+  minimumInvestment Decimal  @db.Decimal(14, 2)
+  maximumInvestment Decimal? @db.Decimal(14, 2)
+  roiPerMonth       Decimal? @db.Decimal(18, 6)
+  roiPerDay         Decimal? @db.Decimal(18, 6) // e.g., 0.10 for 10%
+  maximumEarning    Decimal? @db.Decimal(14, 2)
+  durationInMonths  Int
+  description       String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  investments Investment[]
+}
+
+model Investment {
+  id     String @id @default(uuid())
+  userId String
+  planId String
+
+  transactionId  String // payment reference (the Telegram Stars charge id)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan           SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  amountInvested Decimal          @db.Decimal(14, 2)
+  roiPercentage  Decimal          @db.Decimal(18, 6) // base ROI + any applied referral bonus (stored snapshot)
+  startDate      DateTime
+  endDate        DateTime?
+  status         InvestmentStatus @default(PENDING)
+  totalReturn    Decimal?         @db.Decimal(14, 2)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  roiRecords   ROIRecord[]
+  transactions Transaction[] @relation("InvestmentToTransactions")
+
+  @@index([userId])
+  @@index([planId])
+}
+
+model Referral {
+  id              String         @id @default(uuid())
+  referrerId      String
+  referredUserId  String
+  referrer        User           @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser    User           @relation("Referred", fields: [referredUserId], references: [id], onDelete: Cascade)
+  level           Int // 1..5
+  bonusPercentage Decimal        @db.Decimal(18, 6) // e.g., 0.10 for 10%
+  bonusStartDate  DateTime
+  bonusEndDate    DateTime
+  status          ReferralStatus @default(ACTIVE)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([referrerId])
+  @@index([referredUserId])
+}
+
+model Transaction {
+  id           String            @id @default(uuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         TransactionType   @default(ROI)
+  amount       Decimal           @db.Decimal(14, 2)
+  currency     String            @default("INR")
+  status       TransactionStatus @default(PENDING)
+  description  String?
+  meta         Json?
+  investmentId String? // Optional foreign key to Investment
+  investment   Investment?       @relation("InvestmentToTransactions", fields: [investmentId], references: [id], onDelete: SetNull)
+  createdAt    DateTime          @default(now())
+
+  @@index([userId])
+  @@index([investmentId])
+}
+
+// A persisted Telegram Stars intent binds the invoice payload to the account,
+// the plan and the INR amount. Settlement is claimed in one transaction, so a
+// replayed webhook can never create a second investment.
+model Payment {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  amount           Decimal   @db.Decimal(14, 2) // principal in INR
+  currency         String    @default("INR")
+  provider         String    @default("TELEGRAM_STARS")
+  status           String    @default("PENDING") // PENDING | CONFIRMED | REFUNDED | EXPIRED
+  planId           String?
+  starsAmount      Int? // Telegram Stars (XTR) actually charged
+  telegramChargeId String?   @unique
+  telegramUserId   String?
+  invoiceUrl       String?   @db.Text
+  confirmedAt      DateTime?
+  investmentId     String?
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Withdrawal {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Decimal          @db.Decimal(14, 2)
+  upiId       String // payout destination snapshot
+  qrCodeUrl   String? // member-uploaded payout QR snapshot
+  status      WithdrawalStatus @default(PENDING)
+  processedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+model Transfer {
+  id         String         @id @default(uuid())
+  senderId   String
+  receiverId String
+  sender     User           @relation("sentTransfers", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User           @relation("receivedTransfers", fields: [receiverId], references: [id], onDelete: Cascade)
+  amount     Decimal        @db.Decimal(14, 2)
+  status     TransferStatus @default(PENDING)
+  note       String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model ROIRecord {
+  id                     String      @id @default(uuid())
+  userId                 String
+  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investmentId           String?
+  investment             Investment? @relation(fields: [investmentId], references: [id], onDelete: SetNull)
+  weekNumber             Int
+  roiAmount              Decimal     @db.Decimal(14, 2)
+  isReferralBonusApplied Boolean     @default(false)
+  creditedForDate        DateTime?
+  createdAt              DateTime    @default(now())
+
+  @@index([userId])
+  @@index([investmentId])
+  // Accrual claims a row per investment and day, so a retry or a concurrent
+  // request cannot credit the same period twice.
+  @@unique([investmentId, creditedForDate])
+}
+
+/// Telegram Stars credentials and pricing, managed by the admin panel.
+/// Deliberately NOT part of `Setting`: GET /api/setting is unauthenticated and
+/// must never expose the bot token or the webhook secret.
+model TelegramStarsSetting {
+  id                 String   @id @default(uuid())
+  botToken           String?
+  botUsername        String?
+  webhookSecret      String?
+  webhookUrl         String?  @db.Text
+  starsPerInr        Decimal? @db.Decimal(18, 6) // Stars charged per INR 1 invested
+  maxStarsPerInvoice Int      @default(10000)
+  isEnabled          Boolean  @default(false)
+  updatedById        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("telegram_stars_settings")
+}
+
+model Setting {
+  id                  String  @id @default(uuid())
+  phoneNumber         String?
+  email               String?
+  activeUser          String?
+  totalUser           String?
+  location            String?
+  maxiumEarningReturn Int?
+  /// Highest payout a non-owner admin may approve on their own; above it the
+  /// owner has to approve. Null means "use the platform default".
+  withdrawalApprovalLimit Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("settings")
+}
+
+/**
+ * Enums
+ */
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+/**
+ * Models
+ */
+
+model SupportTicket {
+  id          String              @id @default(uuid())
+  userId      String
+  subject     String
+  description String
+  status      SupportTicketStatus @default(OPEN)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("support_tickets")
+}
+
+/// A back-office account. `role` is only a preset that seeds `permissions`;
+/// the effective rights of a non-owner are always the stored `permissions`
+/// list (see src/service/permissions.ts). SUPER_ADMIN bypasses the list.
+model admin {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  name         String?
+  role         AdminRole @default(ADMIN)
+  permissions  Json? // effective permission keys for every role except SUPER_ADMIN
+  isActive     Boolean   @default(true) // false: cannot sign in, tokens rejected
+  mustChangePassword Boolean @default(false)
+  lastLoginAt  DateTime?
+  createdById  String? // which owner created this account
+  tokenVersion Int       @default(0) // bumped to invalidate issued tokens
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auditLogs AdminAuditLog[]
+
+  @@index([email])
+}
+
+enum AdminRole {
+  ADMIN // legacy / custom: only the stored permissions apply
+  SUPER_ADMIN // owner: every permission, cannot be limited
+  FINANCE
+  SUPPORT
+  ANALYST
+}
+
+/// One row per back-office write, so "who changed what" is answerable later.
+/// `adminEmail` is snapshotted because the account may be deleted afterwards.
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String?
+  admin      admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  adminEmail String
+  action     String // e.g. withdrawals:approve
+  entity     String? // withdrawal | plan | admin | user | payment | setting
+  entityId   String?
+  summary    String
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+/// The platform's own payout identity (UPI id + QR image) used by operations.
+/// Never a deposit address — there is no crypto in this platform.
+model QrCode {
+  id String @id @default(uuid())
+
+  qrCodeUrl Json?
+  upiId     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  PROMOTIONAL
+  SYSTEM
+}
+
+model Notification {
+  id                String             @id @default(uuid())
+  title             String
+  message           String
+  type              NotificationType   @default(INFO)
+  meta              Json? // Optional metadata (e.g., { "actionUrl": "/dashboard", "imageUrl": "..." })
+  expiresAt         DateTime? // Optional expiration for time-sensitive notifications
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  userNotifications UserNotification[]
+
+  @@index([type])
+  @@index([createdAt])
+  @@index([expiresAt])
+}
+
+model UserNotification {
+  id             String @id @default(uuid())
+  userId         String
+  notificationId String
+
+  user         User         @relation(fields: [userId], references: [id])
+  notification Notification @relation(fields: [notificationId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, notificationId]) // prevent duplicates
+}
+
+model Enquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  subject   String
+  message   String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
